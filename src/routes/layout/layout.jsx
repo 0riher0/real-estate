@@ -11,9 +11,7 @@ function Layout() {
   const { fetchUserInfo } = useUserStore();
   useEffect(() => {
     const unSub = onAuthStateChanged(auth, (user) => {
-      console.log({ user });
-
-      fetchUserInfo(user.uid);
+      fetchUserInfo(user?.uid);
     });
     return () => {
       unSub();

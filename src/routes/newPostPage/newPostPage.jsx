@@ -6,6 +6,10 @@ import {
 } from "@files-ui/react";
 import "./newPostPage.scss";
 import { useState } from "react";
+import { addDoc, collection } from "firebase/firestore";
+import { assetUpload } from '../../lib/assetUpload'
+import { toast } from "react-toastify";
+import { db } from "../../lib/firebase";
 
 function NewPostPage() {
   const [extFiles, setExtFiles] = useState([]);
@@ -49,35 +53,44 @@ function NewPostPage() {
     );
   };
 
+  const onSubmit = (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const data = Object.fromEntries(form);
+    const upload = async () => {
+      try {
+
+        let photos = await Promise.all(extFiles.map(e => assetUpload(e)))
+
+        const docRef = await addDoc(collection(db, 'ads'), { ...data, photos })
+
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    toast.promise(upload(), {
+      error: 'Something went wrong',
+      pending: "Creating",
+      success: "Successfully created"
+    })
+  }
+
   return (
     <div className="newPostPage">
       <div className="formContainer">
         <h1>Add New Post</h1>
         <div className="wrapper">
-          <form>
+          <form onSubmit={onSubmit}>
             <label htmlFor="Images">Фото</label>
             <Dropzone
               onChange={updateFiles}
               minHeight="195px"
               value={extFiles}
               accept="image/*"
-              maxFiles={3}
+              maxFiles={5}
               maxFileSize={5 * 1024 * 1024}
               label="Перетащите файлы сюда или щелкните, чтобы загрузить"
-              // uploadConfig={{
-              //   // autoUpload: true
-              //   url: BASE_URL + "/file",
-              //   cleanOnUpload: true,
-              // }}
-              onUploadStart={handleStart}
-              onUploadFinish={handleFinish}
-              fakeUpload
-              actionButtons={{
-                position: "after",
-                abortButton: {},
-                deleteButton: {},
-                uploadButton: {},
-              }}
             >
               {extFiles.map((file) => (
                 <FileMosaic
@@ -106,12 +119,12 @@ function NewPostPage() {
               <input id="title" name="title" type="text" />
             </div>
             <div className="item">
-              <label htmlFor="price">Город</label>
-              <input id="price" name="price" type="number" />
+              <label htmlFor="city">Город</label>
+              <input id="city" name="city" type="text" />
             </div>
             <div className="item">
-              <label htmlFor="address">Район</label>
-              <input id="address" name="address" type="text" />
+              <label htmlFor="district">Район</label>
+              <input id="district" name="district" type="text" />
             </div>
             <div className="item">
               <label htmlFor="address">Адрес</label>
@@ -120,117 +133,53 @@ function NewPostPage() {
             <div className="item">
               <label htmlFor="type">Тип</label>
               <select name="type">
-                <option value="rent" defaultChecked>
+                <option value="residential" defaultChecked>
                   Жилое
                 </option>
-                <option value="buy">Не Жилое</option>
+                <option value="nonresidential">Не Жилое</option>
               </select>
             </div>
             <div className="item">
-              <label htmlFor="address">Ориентир</label>
-              <input id="address" name="address" type="text" />
+              <label htmlFor="reference">Ориентир</label>
+              <input id="reference" name="reference" type="text" />
             </div>
             <div className="item">
-              <label htmlFor="address">Кол.комнат</label>
-              <input id="address" name="address" type="text" />
+              <label htmlFor="rooms">Кол.комнат</label>
+              <input id="rooms" name="rooms" type="text" />
             </div>
             <div className="item">
-              <label htmlFor="address">Ремонт</label>
+              <label htmlFor="repairment">Ремонт</label>
               <select name="type">
-                <option value="rent" defaultChecked>
+                <option value="notRepaired" defaultChecked>
                   Требуется ремонт
                 </option>
-                <option value="buy">Нормальный</option>
-                <option value="buy">Хороший</option>
-                <option value="buy">Отличный</option>
+                <option value="normal">Нормальный</option>
+                <option value="good">Хороший</option>
+                <option value="excellent">Отличный</option>
               </select>
             </div>
             <div className="item">
-              <label htmlFor="address">Этаж</label>
-              <input id="address" name="address" type="text" />
-            </div>
-
-            <div className="item description">
-              <label htmlFor="desc">Description</label>
-              <textarea></textarea>
+              <label htmlFor="storey">Этаж</label>
+              <input id="storey" name="storey" type="text" />
             </div>
             <div className="item">
-              <label htmlFor="city">City</label>
-              <input id="city" name="city" type="text" />
-            </div>
-            <div className="item">
-              <label htmlFor="bedroom">Bedroom Number</label>
-              <input min={1} id="bedroom" name="bedroom" type="number" />
-            </div>
-            <div className="item">
-              <label htmlFor="bathroom">Bathroom Number</label>
-              <input min={1} id="bathroom" name="bathroom" type="number" />
-            </div>
-            <div className="item">
-              <label htmlFor="latitude">Latitude</label>
-              <input id="latitude" name="latitude" type="text" />
-            </div>
-            <div className="item">
-              <label htmlFor="longitude">Longitude</label>
-              <input id="longitude" name="longitude" type="text" />
-            </div>
-            <div className="item">
-              <label htmlFor="type">Type</label>
+              <label htmlFor="furniture">Мебель</label>
               <select name="type">
-                <option value="rent" defaultChecked>
-                  Rent
-                </option>
-                <option value="buy">Buy</option>
+                <option value="withFurniture">С мебелью</option>
+                <option value="withoutFurniture">Без мебели</option>
               </select>
             </div>
             <div className="item">
-              <label htmlFor="type">Property</label>
-              <select name="property">
-                <option value="apartment">Apartment</option>
-                <option value="house">House</option>
-                <option value="condo">Condo</option>
-                <option value="land">Land</option>
-              </select>
+              <label htmlFor="area">Общая площадь</label>
+              <input id="area" name="area" type="text" />
             </div>
             <div className="item">
-              <label htmlFor="utilities">Utilities Policy</label>
-              <select name="utilities">
-                <option value="owner">Owner is responsible</option>
-                <option value="tenant">Tenant is responsible</option>
-                <option value="shared">Shared</option>
-              </select>
+              <label htmlFor="price">Цена</label>
+              <input id="price" name="price" type="text" />
             </div>
-            <div className="item">
-              <label htmlFor="pet">Pet Policy</label>
-              <select name="pet">
-                <option value="allowed">Allowed</option>
-                <option value="not-allowed">Not Allowed</option>
-              </select>
-            </div>
-            <div className="item">
-              <label htmlFor="income">Income Policy</label>
-              <input
-                id="income"
-                name="income"
-                type="text"
-                placeholder="Income Policy"
-              />
-            </div>
-            <div className="item">
-              <label htmlFor="size">Total Size (sqft)</label>
-              <input min={0} id="size" name="size" type="number" />
-            </div>
-            <div className="item">
-              <label htmlFor="school">School</label>
-              <input min={0} id="school" name="school" type="number" />
-            </div>
-            <div className="item">
-              <label htmlFor="bus">bus</label>
-              <input min={0} id="bus" name="bus" type="number" />
-            </div>
-            <div className="item">
-              <label htmlFor="restaurant">Restaurant</label>
-              <input min={0} id="restaurant" name="restaurant" type="number" />
+            <div className="item description">
+              <label htmlFor="description">Примечания</label>
+              <textarea name="description" placeholder="Примечания" ></textarea>
             </div>
             <button className="sendButton">Add</button>
           </form>

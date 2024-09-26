@@ -2,12 +2,53 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useUserStore } from "../../lib/userStore";
 import "./navbar.scss";
+import { Triangle } from "react-loader-spinner";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
 
-  const { currentUser } = useUserStore();
+  const { currentUser, isLoading } = useUserStore();
   console.log(currentUser);
+
+  const renderRight = () => {
+    if (isLoading) {
+      return (
+        <Triangle
+          visible={true}
+          height="80"
+          width="80"
+          color="#4fa94d"
+          ariaLabel="triangle-loading"
+          wrapperStyle={{}}
+          wrapperClass=""
+        />
+      );
+    }
+    if (!!currentUser) {
+      return (
+        <div className="user">
+          <img
+            src={currentUser.avatar ? currentUser.avatar : "/avatar.jpg"}
+            alt=""
+          />
+          <span>{currentUser.fullName}</span>
+          <Link to="/profile" className="profile">
+            <div className="notification">3</div>
+            <span>Profile</span>
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <a href="/login">Sign in</a>
+        <a href="/register" className="register">
+          Sign up
+        </a>
+      </>
+    );
+  };
 
   return (
     <nav>
@@ -22,7 +63,8 @@ function Navbar() {
         <a href="/">Agents</a>
       </div>
       <div className="right">
-        {!!currentUser ? (
+        {renderRight()}
+        {/* {!!currentUser ? (
           <div className="user">
             <img
               src={currentUser.avatar ? currentUser.avatar : "/avatar.jpg"}
@@ -36,12 +78,26 @@ function Navbar() {
           </div>
         ) : (
           <>
-            <a href="/login">Sign in</a>
-            <a href="/register" className="register">
-              Sign up
-            </a>
+            {isLoading ? (
+              <Triangle
+                visible={true}
+                height="80"
+                width="80"
+                color="#4fa94d"
+                ariaLabel="triangle-loading"
+                wrapperStyle={{}}
+                wrapperClass=""
+              />
+            ) : (
+              <>
+                <a href="/login">Sign in</a>
+                <a href="/register" className="register">
+                  Sign up
+                </a>
+              </>
+            )}
           </>
-        )}
+        )} */}
         <div className="menuIcon">
           <img
             src="/menu.png"

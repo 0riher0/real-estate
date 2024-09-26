@@ -51,7 +51,11 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <div style={{ overflow: "scroll", maxHeight: "100vh" }}>
+      <RouterProvider router={router} />
+    </div>
+  );
 }
 
 export default App;
